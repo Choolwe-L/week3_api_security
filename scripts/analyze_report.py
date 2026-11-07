@@ -14,6 +14,7 @@ import html
 from pathlib import Path
 
 RISK_ORDER = {"High": 0, "Medium": 1, "Low": 2, "Informational": 3}
+CONFIDENCE = {"0": "False Positive", "1": "Low", "2": "Medium", "3": "High", "4": "Confirmed"}
 
 
 def load_alerts(report_path: Path):
@@ -27,7 +28,7 @@ def load_alerts(report_path: Path):
                 {
                     "name": a.get("alert") or a.get("name", ""),
                     "risk": (a.get("riskdesc", "").split(" ")[0] or "Informational"),
-                    "confidence": a.get("confidence", ""),
+                    "confidence": CONFIDENCE.get(str(a.get("confidence", "")), a.get("confidence", "")),
                     "cwe": a.get("cweid", ""),
                     "wasc": a.get("wascid", ""),
                     "count": a.get("count", len(instances)),
