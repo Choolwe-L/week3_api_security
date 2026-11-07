@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# App data
+*.db
+
+# ZAP runtime artifacts (keep the generated reports, drop logs/session)
+zap/zap-daemon.log
+zap/*.session
+zap/*.session.*
+zap/.ZAP/
+zapdl/
+zapdeb/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store

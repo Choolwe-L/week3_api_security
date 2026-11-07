@@ -1,0 +1,75 @@
+# OWASP ZAP Automation Framework plan — Week 3
+# Fitness API Security Assessment & Hardening Framework
+#
+# Runs headlessly:  zap.sh -cmd -autorun zap/zap-automation.yaml
+#
+# Target: the locally-owned, deliberately vulnerable Fitness API on
+# http://127.0.0.1:5000 (authorized lab target only — do not point at
+# systems you do not own).
+
+env:
+  contexts:
+    - name: "fitness-api"
+      urls:
+        - "http://127.0.0.1:5000"
+      includePaths:
+        - "http://127.0.0.1:5000.*"
+      excludePaths: []
+  parameters:
+    failOnError: true
+    failOnWarning: false
+    progressToStdout: true
+
+jobs:
+  # 1. Passive-scan configuration (defaults, scan everything)
+  - type: passiveScan-config
+    parameters:
+      maxAlertsPerRule: 0
+      scanOnlyInScope: true
+
+  # 2. Seed the site tree with the known API endpoints so the active
+  #    scanner has something to attack (REST endpoints are not linked).
+  - type: import
+    parameters:
+      type: har
+      fileName: "zap/requests.har"
+
+  # 3. Traditional spider to pick up anything linked from the root.
+  - type: spider
+    parameters:
+      context: "fitness-api"
+      url: "http://127.0.0.1:5000"
+      maxDuration: 2
+      maxDepth: 5
+
+  # 4. Wait for passive scanning to drain.
+  - type: passiveScan-wait
+    parameters:
+      maxDuration: 5
+
+  # 5. Active scan — the DAST core for this week.
+  - type: activeScan
+    parameters:
+      context: "fitness-api"
+      maxRuleDurationInMins: 2
+      maxScanDurationInMins: 15
+      policy: "Default Policy"
+
+  # 6. Reports — HTML for humans, JSON + Markdown for the repo.
+  - type: report
+    parameters:
+      template: "traditional-html"
+      reportDir: "zap/reports"
+      reportFile: "zap_fitness_api_report"
+      reportTitle: "Fitness API — OWASP ZAP Automated Scan (Week 3)"
+      reportDescription: "Automated DAST active scan of the locally-owned vulnerable Fitness API."
+  - type: report
+    parameters:
+      template: "traditional-json"
+      reportDir: "zap/reports"
+      reportFile: "zap_fitness_api_report"
+  - type: report
+    parameters:
+      template: "traditional-md"
+      reportDir: "zap/reports"
+      reportFile: "zap_fitness_api_report"
